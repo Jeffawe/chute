@@ -22,12 +22,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      # Ships flatpak-builder and the GNOME SDK. Must match runtime-version
-      # in the manifest.
-      image: bilelmoussaoui/flatpak-github-actions:gnome-49
+      # Build environment only. This image publishes no tag newer than
+      # gnome-47, so the GNOME 49 runtime the manifest asks for is pulled from
+      # Flathub by --install-deps-from=flathub instead of coming pre-baked.
+      # Costs a download; avoids pinning the app to an older runtime than the
+      # one it was developed and tested against.
+      image: bilelmoussaoui/flatpak-github-actions:gnome-47
       options: --privileged
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Flatpak runtimes
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/flatpak
+          key: flatpak-runtimes-gnome49-${{ hashFiles('packaging/*.yml') }}
+          restore-keys: flatpak-runtimes-gnome49-
 
       - name: Fetch Flathub shared modules
         # libappindicator and its dependencies; org.gnome.Platform omits them.
