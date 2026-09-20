@@ -22,7 +22,7 @@ of a command.
 
 ## Requirements
 
-Tailscale must be installed and running on the host — Chute is a front end for
+Tailscale must be installed and running on the host, Chute is a front end for
 it, not a replacement. Everything else ships with the app.
 
 ## Install
@@ -73,7 +73,7 @@ npm install
 npm run tauri dev
 ```
 
-Note that frontend changes only appear via `tauri dev` — a bare `cargo build`
+Note that frontend changes only appear via `tauri dev`, a bare `cargo build`
 loads the dev server URL rather than the embedded assets.
 
 ## How it works
