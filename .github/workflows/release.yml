@@ -59,9 +59,14 @@ jobs:
           # has flathub as a system remote. A --user build resolves against
           # user remotes, which are empty here, and fails with
           # "No remote refs found for flathub".
+          # --gpg-sign belongs here too, not only on build-update-repo:
+          # this is the step that commits the app into the repo, and it is the
+          # commit signature clients check. Signing only the summary gives
+          # "GPG verification enabled, but no signatures found".
           flatpak-builder --force-clean --disable-rofiles-fuse \
             --install-deps-from=flathub \
             --repo=packaging/repo \
+            --gpg-sign="$GPG_KEY_ID" \
             packaging/build "packaging/$APP_ID.yml"
 
       - name: Create bundle

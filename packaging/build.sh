@@ -15,11 +15,20 @@ if [[ ! -d "$HERE/shared-modules" ]]; then
   git clone --depth 1 https://github.com/flathub/shared-modules.git "$HERE/shared-modules"
 fi
 
+# Signing is optional locally; CI always signs. Set CHUTE_GPG_KEY to a key id
+# to produce a repo clients can verify.
+SIGN=()
+if [[ -n "${CHUTE_GPG_KEY:-}" ]]; then
+  SIGN=(--gpg-sign="$CHUTE_GPG_KEY")
+  echo "signing with $CHUTE_GPG_KEY"
+fi
+
 flatpak run org.flatpak.Builder \
   --force-clean \
   --user \
   --install-deps-from=flathub \
   --repo="$REPO" \
+  "${SIGN[@]}" \
   "$BUILD" \
   "$HERE/$APP_ID.yml"
 
@@ -28,6 +37,7 @@ flatpak run org.flatpak.Builder \
 # "No remote refs found" instead of just downloading it.
 flatpak build-bundle \
   --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+  "${SIGN[@]}" \
   "$REPO" "$HERE/$APP_ID.flatpak" "$APP_ID"
 echo
 echo "bundle: $HERE/$APP_ID.flatpak"
