@@ -45,7 +45,11 @@ jobs:
 
       - name: Build
         run: |
-          flatpak-builder --force-clean --user --disable-rofiles-fuse \
+          # System scope, not --user: the container runs as root and already
+          # has flathub as a system remote. A --user build resolves against
+          # user remotes, which are empty here, and fails with
+          # "No remote refs found for flathub".
+          flatpak-builder --force-clean --disable-rofiles-fuse \
             --install-deps-from=flathub \
             --repo=packaging/repo \
             packaging/build "packaging/$APP_ID.yml"
