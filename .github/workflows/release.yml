@@ -17,6 +17,7 @@ permissions:
 
 env:
   APP_ID: io.github.jeffawe.Chute
+  GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
 
 jobs:
   build:
@@ -43,6 +44,15 @@ jobs:
         # libappindicator and its dependencies; org.gnome.Platform omits them.
         run: git clone --depth 1 https://github.com/flathub/shared-modules.git packaging/shared-modules
 
+      - name: Import signing key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          printf '%s' "$GPG_PRIVATE_KEY" | gpg --batch --import
+          # The repo and the bundle must be signed by the key published in
+          # chute.flatpakrepo, or clients reject them.
+          gpg --list-secret-keys --keyid-format=long
+
       - name: Build
         run: |
           # System scope, not --user: the container runs as root and already
@@ -58,11 +68,13 @@ jobs:
         run: |
           flatpak build-bundle \
             --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+            --gpg-sign="$GPG_KEY_ID" \
             packaging/repo "$APP_ID.flatpak" "$APP_ID"
 
       - name: Finalise repo for static hosting
         run: |
-          flatpak build-update-repo --generate-static-deltas --prune packaging/repo
+          flatpak build-update-repo --generate-static-deltas --prune \
+            --gpg-sign="$GPG_KEY_ID" packaging/repo
           cp packaging/chute.flatpakrepo packaging/repo/
           # Pages otherwise ignores files and directories beginning with "_".
           touch packaging/repo/.nojekyll

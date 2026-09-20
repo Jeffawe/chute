@@ -49,10 +49,13 @@ No updates with this route — reinstall a newer bundle to upgrade.
 
 ### Steam Deck
 
-Both routes work in Desktop Mode. `packaging/install-deck.sh` wraps the second
-one with preflight checks that Tailscale is actually running, and verifies the
-sandbox can reach it. Everything installs under `$HOME`, so a SteamOS update
-will not remove it.
+Nothing special: it is an ordinary Linux machine and the commands above work
+unchanged. Use Desktop Mode, and make sure Tailscale is already running on the
+Deck first. Everything installs under `$HOME`, so SteamOS updates leave it
+alone.
+
+`packaging/install.sh` wraps the bundle route with preflight checks that
+Tailscale is reachable from inside the sandbox, on any distro.
 
 ## Building from source
 

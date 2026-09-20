@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Install Chute from a bundle produced by build.sh.
 #
-# Written for the Steam Deck, where the root filesystem is read-only and gets
-# replaced on SteamOS updates: everything here lands in $HOME and survives.
-# Nothing needs root.
+# Works on any distro with flatpak. Everything lands in $HOME via --user, so
+# nothing needs root and an immutable root filesystem (SteamOS, Silverblue)
+# is not a problem.
 set -euo pipefail
 
 APP_ID="io.github.jeffawe.Chute"
@@ -58,6 +58,6 @@ Installed. Launch it from your applications menu, or:
 In Settings, set where received files should go and turn on
 "Start automatically on login" so the receiver runs without the window.
 
-Right-click entries for Dolphin are written on first run, once the
-device list loads. You may need to restart Dolphin to see them.
+Right-click entries are written on first run, once the device list
+loads. You may need to restart your file manager to see them.
 MSG
