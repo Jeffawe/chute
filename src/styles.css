@@ -198,7 +198,7 @@ input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: -1p
 
 .status { font-size: 13px; margin: 0; min-height: 1.2em; color: var(--muted); }
 .status.is-ok { color: var(--ok); }
-.status.is-error { color: var(--error); }
+.status.is-error { color: var(--error); white-space: pre-wrap; }
 
 /* received files are clickable: they reveal in the file manager */
 

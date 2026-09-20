@@ -167,6 +167,13 @@ fn get_config(state: State<'_, AppState>) -> Config {
 
 #[tauri::command]
 fn set_config(app: AppHandle, state: State<'_, AppState>, cfg: Config) -> Result<(), String> {
+    // Checked here rather than left to the receiver: a bad path would
+    // otherwise fail silently later - the CLI reports success and deletes
+    // the file from the inbox even when it could not write it to disk.
+    if cfg.auto_receive {
+        config::check_writable(&cfg.download_dir)?;
+    }
+
     let disabling_menus = !cfg.shell_menus;
     config::save(&app, &cfg)?;
     *state.cfg.lock().unwrap() = cfg;
@@ -281,8 +288,14 @@ async fn supervise(app: AppHandle, dir: PathBuf) {
     let mut backoff = MIN;
 
     loop {
-        if let Err(e) = std::fs::create_dir_all(&dir) {
-            let _ = app.emit("receiver-error", format!("{}: {e}", dir.display()));
+        // The same check Settings runs before saving: a directory that looks
+        // fine from `ls` can still be unwritable from inside the sandbox, and
+        // `tailscale file get` reports success and drops the file from the
+        // inbox even when it could not be written to disk. Catching it here
+        // covers a config that was already bad when the receiver started
+        // (an existing setting, or a Flatpak permission revoked since).
+        if let Err(e) = config::check_writable(&dir) {
+            let _ = app.emit("receiver-error", e);
             tokio::time::sleep(backoff).await;
             backoff = (backoff * 2).min(MAX);
             continue;
