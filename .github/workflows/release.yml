@@ -1,0 +1,74 @@
+# Builds the Flatpak once, then publishes it two ways:
+#   * the single-file bundle as a GitHub Release asset (manual install)
+#   * the ostree repo to GitHub Pages (adds `flatpak update` support)
+#
+# Triggered by pushing a tag, e.g.  git tag v0.1.0 && git push --tags
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # create the release
+  pages: write      # publish the repo
+  id-token: write
+
+env:
+  APP_ID: io.github.jeffawe.Chute
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      # Ships flatpak-builder and the GNOME SDK. Must match runtime-version
+      # in the manifest.
+      image: bilelmoussaoui/flatpak-github-actions:gnome-49
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Flathub shared modules
+        # libappindicator and its dependencies; org.gnome.Platform omits them.
+        run: git clone --depth 1 https://github.com/flathub/shared-modules.git packaging/shared-modules
+
+      - name: Build
+        run: |
+          flatpak-builder --force-clean --user --disable-rofiles-fuse \
+            --install-deps-from=flathub \
+            --repo=packaging/repo \
+            packaging/build "packaging/$APP_ID.yml"
+
+      - name: Create bundle
+        run: |
+          flatpak build-bundle \
+            --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+            packaging/repo "$APP_ID.flatpak" "$APP_ID"
+
+      - name: Finalise repo for static hosting
+        run: |
+          flatpak build-update-repo --generate-static-deltas --prune packaging/repo
+          cp packaging/chute.flatpakrepo packaging/repo/
+          # Pages otherwise ignores files and directories beginning with "_".
+          touch packaging/repo/.nojekyll
+
+      - name: Attach bundle to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.APP_ID }}.flatpak
+          generate_release_notes: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: packaging/repo
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

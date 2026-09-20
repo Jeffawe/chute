@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Chute
+GenericName=Tailscale file transfer
+Comment=Send and receive files over Tailscale
+Icon=io.github.jeffawe.Chute
+Exec=chute %F
+Terminal=false
+Categories=Network;FileTransfer;Utility;
+Keywords=tailscale;taildrop;file;transfer;share;
+StartupNotify=true
+MimeType=all/all;

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.jeffawe.Chute</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Chute</name>
+  <summary>Send and receive files over Tailscale</summary>
+
+  <description>
+    <p>
+      A desktop front end for Taildrop. Linux has no built-in Taildrop
+      receiver, so incoming files sit in the Tailscale inbox until something
+      collects them. This runs a receiver in the background and drops arrivals
+      into a folder you choose.
+    </p>
+    <p>
+      Sending works from the window or straight from a file manager: a
+      "Send with Taildrop" submenu is added to Nautilus and Dolphin, with one
+      entry per online device.
+    </p>
+    <p>
+      Requires Tailscale to be installed and running on the host.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.jeffawe.Chute.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+
+  <categories>
+    <category>Network</category>
+    <category>FileTransfer</category>
+  </categories>
+
+  <releases>
+    <release version="0.1.0" date="2026-09-19">
+      <description>
+        <p>First release: send, background receive, and file manager integration.</p>
+      </description>
+    </release>
+  </releases>
+</component>

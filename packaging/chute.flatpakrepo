@@ -1,0 +1,6 @@
+[Flatpak Repo]
+Title=Chute
+Url=https://jeffawe.github.io/chute/
+Homepage=https://github.com/jeffawe/chute
+Description=Send files across your Tailscale network
+Comment=Auto-updating repository for Chute

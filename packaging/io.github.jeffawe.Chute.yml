@@ -1,0 +1,105 @@
+id: io.github.jeffawe.Chute
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+command: chute
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node24
+
+finish-args:
+  # Display and GPU.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+
+  # The whole app is a client of the host's tailscaled; this socket is the
+  # only channel it needs, and without it nothing works.
+  - --filesystem=/run/tailscale
+
+  # Files are chosen from and written to arbitrary locations by design: this
+  # is a file-transfer tool, and the destination folder is user-configurable.
+  - --filesystem=home
+  # Removable media, so right-clicking a file on the Steam Deck's SD card or a
+  # USB drive works. Without these the file is simply invisible to the sandbox.
+  - --filesystem=/run/media
+  - --filesystem=/media
+  - --filesystem=/mnt
+
+  # Right-click entries are read by the HOST's file managers, so they have to
+  # be written outside the sandbox's private data directory.
+  - --filesystem=xdg-data/nautilus/scripts:create
+  - --filesystem=xdg-data/kio/servicemenus:create
+  - --filesystem=xdg-data/kservices5/ServiceMenus:create
+
+  # "Start on login" writes a desktop entry the host session reads.
+  - --filesystem=xdg-config/autostart:create
+
+  # Desktop notifications, reveal-in-file-manager, and the tray icon. The
+  # tray requires owning a StatusNotifierItem name, not merely talking to one.
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.FileManager1
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.kde.StatusNotifierItem-2-1
+  - --talk-name=com.canonical.AppMenu.Registrar
+
+modules:
+  # org.gnome.Platform does not ship libappindicator, and Tauri's tray loads it
+  # dynamically at startup - without it the app aborts before showing a window.
+  # These are Flathub's vetted build definitions rather than hand-rolled ones.
+  - shared-modules/libappindicator/libappindicator-gtk3-12.10.json
+
+  # The sandbox cannot see the host's /usr/bin, so the CLI ships with the app.
+  # It is statically linked, which makes this a plain file copy.
+  - name: tailscale-cli
+    buildsystem: simple
+    build-commands:
+      # Only the CLI: tailscaled runs on the host, not in here.
+      - install -Dm755 tailscale /app/bin/tailscale
+    sources:
+      # Pinned upstream release rather than a copy of whatever the build
+      # machine happens to have installed, so CI can build this and the
+      # result is reproducible. BSD-3-Clause, redistributable.
+      - type: archive
+        url: https://pkgs.tailscale.com/stable/tailscale_1.102.3_amd64.tgz
+        sha256: 36ddd9b51be57ffc2990cf76323cfa13643bfbb1b8a969f6183fa164741cdef5
+        strip-components: 1
+
+  - name: chute
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node24/bin
+      env:
+        CARGO_HOME: /run/build/chute/cargo
+      build-args:
+        # Dependencies are fetched during the build. Flathub requires fully
+        # vendored sources instead; for personal builds this is far simpler.
+        - --share=network
+    build-commands:
+      - npm ci
+      # The Tauri CLI, not a bare `cargo build`: it is what reliably embeds the
+      # built frontend into the binary. --no-bundle skips deb/rpm/AppImage
+      # generation, which Flatpak does not need. It runs `npm run build` itself
+      # via beforeBuildCommand.
+      - npm run tauri build -- --no-bundle
+      - install -Dm755 src-tauri/target/release/chute /app/bin/chute
+      - install -Dm644 packaging/io.github.jeffawe.Chute.desktop
+        /app/share/applications/io.github.jeffawe.Chute.desktop
+      - install -Dm644 packaging/io.github.jeffawe.Chute.metainfo.xml
+        /app/share/metainfo/io.github.jeffawe.Chute.metainfo.xml
+      - install -Dm644 src-tauri/icons/128x128.png
+        /app/share/icons/hicolor/128x128/apps/io.github.jeffawe.Chute.png
+      - install -Dm644 src-tauri/icons/32x32.png
+        /app/share/icons/hicolor/32x32/apps/io.github.jeffawe.Chute.png
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .git
+          - node_modules
+          - dist
+          - src-tauri/target
+          - packaging/build
+          - packaging/vendor

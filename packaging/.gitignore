@@ -1,0 +1,7 @@
+# flatpak-builder output and the vendored CLI copy
+build/
+repo/
+vendor/
+.flatpak-builder/
+*.flatpak
+shared-modules/

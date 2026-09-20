@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chute</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <header>
+      <h1>Chute</h1>
+      <div id="daemon" class="pill" data-state="unknown">checking…</div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab is-active" data-tab="send">Send</button>
+      <button class="tab" data-tab="received">Received</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <section id="panel-send" class="panel is-active">
+      <div class="panel-head">
+        <h2>Devices</h2>
+        <button id="refresh" class="link">Refresh</button>
+      </div>
+      <ul id="devices" class="devices"><li class="empty">Loading devices…</li></ul>
+
+      <div id="dropzone" class="dropzone">
+        <p>Drop files here</p>
+        <button id="pick" class="secondary">Choose files…</button>
+      </div>
+
+      <ul id="staged" class="staged"></ul>
+
+      <button id="send" class="primary" disabled>Send</button>
+      <p id="send-status" class="status"></p>
+    </section>
+
+    <section id="panel-received" class="panel">
+      <div class="panel-head"><h2>Received</h2></div>
+      <ul id="arrivals" class="arrivals">
+        <li class="empty">Nothing yet. Files appear here as they arrive.</li>
+      </ul>
+    </section>
+
+    <section id="panel-settings" class="panel">
+      <div class="panel-head"><h2>Settings</h2></div>
+      <label class="field">
+        <span>Save received files to</span>
+        <div class="row">
+          <input id="download-dir" type="text" spellcheck="false" />
+          <button id="browse" class="secondary">Browse…</button>
+        </div>
+      </label>
+      <label class="check">
+        <input id="auto-receive" type="checkbox" />
+        <span>Receive files automatically</span>
+      </label>
+      <label class="check">
+        <input id="autostart" type="checkbox" />
+        <span>Start automatically on login</span>
+      </label>
+      <label class="check">
+        <input id="shell-menus" type="checkbox" />
+        <span>Add "Send with Chute" to file manager right-click</span>
+      </label>
+      <p class="hint">
+        Linux has no built-in Taildrop receiver, so files sit in the inbox until
+        something collects them. Leave this on and they land in the folder above.
+        Closing the window keeps it running in the tray; quit from there to stop.
+      </p>
+      <button id="save" class="primary">Save</button>
+      <p id="settings-status" class="status"></p>
+    </section>
+  </body>
+</html>
