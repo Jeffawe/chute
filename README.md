@@ -1,7 +1,7 @@
 # Chute
 
 Send and receive files across your Tailscale network, from a desktop app or
-straight from your file manager.
+straight from your file manager on a Linux device.
 
 Tailscale's file transfer works well on macOS and Windows, where the official
 client quietly saves incoming files for you. On Linux there is no receiver at
