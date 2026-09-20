@@ -1,0 +1,6 @@
+[Unit]
+Description=Copy new shared Taildrop arrivals into this user's folder
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/chute-fanout
